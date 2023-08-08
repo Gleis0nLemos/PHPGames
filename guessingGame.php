@@ -2,11 +2,28 @@
 
 session_start();
 
+
+function showMessage ($message) {
+    echo '<h4>' .$message. '</h4>';
+}
+    
+
+function displayForm($label, $name){
+    echo ' 
+        <form action="index.php" method="post">
+            <label for="' .$name. '"> ' .$label. '</label>
+            <input type="text" name="' .$name. '" id="' .$name. '">
+            <input type="submit" value="Enviar">
+        </form>
+        <hr>';
+}
+
+
 function play() 
 {
-    echo '<h3>******************************</h3>';
-    echo '<h3>Bem vindo ao jogo de adivinhação!</h3>';
-    echo '<h3>******************************</h3>';
+    echo '<hr>';
+    echo '<h3>Consegue adivinhar?</h3>';
+    echo '<hr>';
 
     if (!isset($_SESSION['secretNumber'])) {
         $_SESSION['secretNumber'] = 2;#rand($min=1, $max=100);
@@ -16,27 +33,20 @@ function play()
     }
 
     if (!isset($_POST['dificuldade']) && !$_SESSION['mostrouDificuldade']) {
-        echo '<h4>Qual o nível de dificuldade você quer?</h4>';
+        showMessage('Qual o nível de dificuldade você quer?');
         echo '<h3>(1)Fácil, (2)Médio, (3)Difícil</h3>';
-        echo ' 
-        <form action="index.php" method="post">
-            <label for="dificuldade">Escolha a dificuldade</label>
-            <input type="text" name="dificuldade" id="dificuldade">
-            <input type="submit" value="Enviar">
-        </form>';
+
+        displayForm('Escolha uma dificuldade: ', 'dificuldade');
+
         $_SESSION['mostrouDificuldade'] = true;
         return;
     } else {
         $dificuldade = isset($_POST['dificuldade']) ? (int)$_POST['dificuldade'] : 0;
 
-        if ($dificuldade == 1) {
-            echo '<h4>Você está jogando no fácil</h4>'; 
-        } elseif ($dificuldade==2) {
-            echo '<h4>Você está jogando no médio</h4>';
-        } elseif ($dificuldade==3) {
-            echo '<h4>Você está jogando no difícil</h4>';
+        if ($dificuldade >=1 && $dificuldade <= 3) {
+            showMessage('Você está jogando no '. ["", "fácil", "médio", "difícil"][$dificuldade]);
         } elseif (isset($_POST['dificuldade'])) {
-            echo '<h4>Digite uma dificuldade válida</h4>'; 
+            showMessage('Digite uma dificuldade válida'); 
         }
     }
 
@@ -46,32 +56,23 @@ function play()
 
         if ($chute == $_SESSION['secretNumber']) {
             echo '<h3>Você acertou!</h3>';
+            showMessage('Fim do jogo! Você ganhou!');
             session_destroy();
         } elseif ($_SESSION['attempts'] == 0) {
-            echo '<h4>Fim do jogo! Você não conseguiu adivinhar</h4>';
+            showMessage('Fim do jogo! Você não conseguiu adivinhar');
             echo "<p>O número secreto era: {$_SESSION['secretNumber']}</p>";
             session_destroy();
         } else {
-            if ($chute < $_SESSION['secretNumber']) {
-                echo '<h4>Um número um pouco maior</h4>';
-            } else {
-                echo '<h4>Um número um pouco menor</h4>';
-            }
+            $message = ($chute < $_SESSION['secretNumber'] ? 'Um número um pouco maior' : 'Um número um pouco maior'); 
+            showMessage($message);
 
-            echo "<p>Rest". ($_SESSION['attempts'] > 1 ? "am": "a"). " {$_SESSION['attempts']} tentativa" . ($_SESSION['attempts'] > 1 ? 's' : '')."</p>";
-            echo ' 
-            <form action="index.php" method="post">
-                <label for="chute">Chute um número de 1 a 100</label>
-                <input type="text" name="chute" id="chute">
-                <input type="submit" value="Enviar">
-            </form>';
+            $pluralT = ($_SESSION['attempts'] > 1 ? 's' : '');
+            $pluralR = ($_SESSION['attempts'] > 1 ? "am": "a");
+            echo "<p>Rest". $pluralR. " {$_SESSION['attempts']} tentativa" . $pluralT."</p>";
+            
+            displayForm('Chute um número de 1-100: ', 'chute');
         } 
     } else {
-        echo ' 
-        <form action="index.php" method="post">
-            <label for="chute">Chute um número de 1 a 100</label>
-            <input type="text" name="chute" id="chute">
-            <input type="submit" value="Enviar">
-        </form>';
-    }  
+        displayForm('Chute um número de 1-100: ', 'chute');
+    }
 }
